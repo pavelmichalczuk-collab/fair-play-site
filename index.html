@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fair Play — підбір вакансій</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1B2430;
+    --paper:#EDEAE2;
+    --surface:#FBF9F5;
+    --accent:#D9A429;
+    --accent-deep:#B8841E;
+    --steel:#5B7387;
+    --steel-light:#8598A8;
+    --line:#D8D3C6;
+    --match:#3F7A5C;
+    --match-bg:#E7F0EA;
+  }
+
+  *{box-sizing:border-box;}
+
+  body{
+    margin:0;
+    min-height:100vh;
+    background:var(--paper);
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size:28px 28px;
+    background-position:-1px -1px;
+    font-family:"IBM Plex Sans", sans-serif;
+    color:var(--ink);
+    display:flex;
+    justify-content:center;
+    align-items:flex-start;
+    padding:32px 16px;
+  }
+
+  :focus-visible{
+    outline:2px solid var(--accent-deep);
+    outline-offset:2px;
+  }
+
+  .widget{
+    width:100%;
+    max-width:420px;
+    background:var(--surface);
+    border:1px solid var(--line);
+    box-shadow:0 1px 0 var(--line), 0 12px 32px -20px rgba(27,36,48,0.35);
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+  }
+
+  .header{
+    background:var(--ink);
+    color:var(--surface);
+    padding:20px 20px 18px;
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:12px;
+  }
+
+  .brand{
+    font-weight:700;
+    font-size:19px;
+    letter-spacing:0.2px;
+  }
+
+  .tagline{
+    margin-top:4px;
+    font-size:13px;
+    color:var(--steel-light);
+    line-height:1.4;
+    max-width:220px;
+  }
+
+  .phone-badge{
+    flex-shrink:0;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    border:1px solid rgba(251,249,245,0.35);
+    color:var(--surface);
+    text-decoration:none;
+    font-family:"IBM Plex Mono", monospace;
+    font-size:12px;
+    padding:7px 10px;
+    white-space:nowrap;
+    transition:border-color 0.15s ease, background 0.15s ease;
+  }
+  .phone-badge:hover{
+    border-color:var(--accent);
+    background:rgba(217,164,41,0.12);
+  }
+
+  .chat{
+    padding:20px;
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+    min-height:120px;
+  }
+
+  .bot-row{
+    display:flex;
+    gap:10px;
+    align-items:flex-start;
+    animation:rise 0.35s ease both;
+  }
+
+  .bot-mark{
+    flex-shrink:0;
+    width:28px;
+    height:28px;
+    background:var(--ink);
+    color:var(--accent);
+    font-family:"IBM Plex Mono", monospace;
+    font-size:11px;
+    font-weight:500;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    margin-top:2px;
+  }
+
+  .bot-bubble{
+    border-left:2px solid var(--accent);
+    padding:2px 0 2px 12px;
+    font-size:14.5px;
+    line-height:1.5;
+  }
+
+  .user-answer{
+    align-self:flex-end;
+    font-size:13.5px;
+    color:var(--steel);
+    border-bottom:1px solid var(--line);
+    padding-bottom:4px;
+    animation:rise 0.3s ease both;
+  }
+
+  .options{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    padding-left:38px;
+  }
+
+  .option-btn{
+    font-family:"IBM Plex Sans", sans-serif;
+    font-size:13.5px;
+    background:var(--surface);
+    border:1px solid var(--steel-light);
+    color:var(--ink);
+    padding:9px 14px;
+    cursor:pointer;
+    clip-path:polygon(0 0, 100% 0, 100% 100%, 8px 100%, 0 calc(100% - 8px));
+    transition:border-color 0.15s ease, background 0.15s ease, transform 0.1s ease;
+  }
+  .option-btn:hover{
+    border-color:var(--accent-deep);
+    background:#FFF7E8;
+  }
+  .option-btn:active{
+    transform:translateY(1px);
+  }
+
+  .typing{
+    padding-left:38px;
+    display:flex;
+    gap:4px;
+    align-items:center;
+    height:14px;
+  }
+  .typing span{
+    width:5px;
+    height:5px;
+    background:var(--steel-light);
+    display:inline-block;
+    border-radius:50%;
+    animation:blink 1.1s infinite ease-in-out;
+  }
+  .typing span:nth-child(2){animation-delay:0.15s;}
+  .typing span:nth-child(3){animation-delay:0.3s;}
+
+  .results{
+    border-top:1px solid var(--line);
+    padding:18px 20px 20px;
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+  }
+
+  .results-note{
+    font-size:14px;
+    line-height:1.5;
+    color:var(--ink);
+  }
+
+  .job-card{
+    background:var(--match-bg);
+    border:1px solid #CBDFD1;
+    padding:14px 14px 14px 16px;
+    position:relative;
+    animation:stamp 0.4s cubic-bezier(.2,.8,.3,1.2) both;
+  }
+  .job-card::before{
+    content:"";
+    position:absolute;
+    left:0; top:12px; bottom:12px;
+    width:3px;
+    background:var(--match);
+  }
+
+  .job-title{
+    font-weight:600;
+    font-size:15px;
+  }
+
+  .job-meta{
+    margin-top:3px;
+    font-family:"IBM Plex Mono", monospace;
+    font-size:11.5px;
+    color:var(--steel);
+  }
+
+  .job-why{
+    margin-top:8px;
+    font-size:13.5px;
+    line-height:1.45;
+    color:var(--ink);
+  }
+
+  .cta-row{
+    display:flex;
+    gap:10px;
+    padding-top:4px;
+  }
+
+  .cta{
+    flex:1;
+    text-align:center;
+    text-decoration:none;
+    font-size:13.5px;
+    font-weight:600;
+    padding:11px 10px;
+    border:1px solid var(--ink);
+    color:var(--ink);
+    transition:background 0.15s ease, color 0.15s ease;
+  }
+  .cta.primary{
+    background:var(--ink);
+    color:var(--surface);
+  }
+  .cta.primary:hover{
+    background:var(--accent-deep);
+    border-color:var(--accent-deep);
+  }
+  .cta:not(.primary):hover{
+    background:var(--line);
+  }
+
+  .restart{
+    align-self:flex-start;
+    margin-top:2px;
+    background:none;
+    border:none;
+    font-size:12.5px;
+    color:var(--steel);
+    text-decoration:underline;
+    cursor:pointer;
+    padding:0;
+  }
+
+  .error-note{
+    font-size:13px;
+    color:var(--steel);
+    font-style:italic;
+  }
+
+  @keyframes rise{
+    from{opacity:0; transform:translateY(6px);}
+    to{opacity:1; transform:translateY(0);}
+  }
+  @keyframes blink{
+    0%, 80%, 100%{opacity:0.25;}
+    40%{opacity:1;}
+  }
+  @keyframes stamp{
+    from{opacity:0; transform:rotate(-4deg) scale(0.96);}
+    to{opacity:1; transform:rotate(0) scale(1);}
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:0.001ms !important; animation-iteration-count:1 !important;}
+  }
+
+  @media (max-width:400px){
+    .options{padding-left:0;}
+    .typing{padding-left:0;}
+  }
+</style>
+</head>
+<body>
+
+<div class="widget">
+  <div class="header">
+    <div>
+      <div class="brand">Fair Play</div>
+      <div class="tagline">Офіційна робота в Польщі — виробництво, склади, пакування</div>
+    </div>
+    <a class="phone-badge" href="tel:+48604943236">+48 604 943 236</a>
+  </div>
+
+  <div class="chat" id="chat"></div>
+  <div class="results" id="results" style="display:none;"></div>
+</div>
+
+<script>
+const chat = document.getElementById('chat');
+const resultsEl = document.getElementById('results');
+
+const answers = {};
+
+const questions = [
+  {
+    key: 'experience',
+    text: 'Вітаю! Я допоможу підібрати вакансію за кілька секунд. Спершу — маєте досвід роботи на виробництві чи складі?',
+    options: ['Так, маю досвід', 'Ні, без досвіду']
+  },
+  {
+    key: 'polish',
+    text: 'Зрозуміло. Який у вас рівень польської мови?',
+    options: ['Не знаю польську', 'Базова польська', 'Вільно володію']
+  },
+  {
+    key: 'location',
+    text: 'І останнє — де ви зараз перебуваєте?',
+    options: ['Вже у Польщі', 'Ще в Україні']
+  }
+];
+
+const jobsData = [
+  { title:'Пакувальник(-ця) на виробництві', city:'Вроцлав', salary:'4700–5400 zł netto', polish:'не потрібна', experience:'без досвіду' },
+  { title:'Оператор пакувальної лінії', city:'Познань', salary:'5200–6100 zł netto', polish:'базова', experience:'бажаний досвід' },
+  { title:'Комплектувальник замовлень на складі', city:'Варшава', salary:'5000–5800 zł netto', polish:'не потрібна', experience:'без досвіду' },
+  { title:'Сортувальник(-ця) продукції', city:'Гданськ', salary:'4700–5300 zł netto', polish:'не потрібна', experience:'без досвіду' },
+  { title:'Оператор верстата з ЧПУ', city:'Краків', salary:'6500–8200 zł netto', polish:'базова', experience:'потрібен досвід' },
+  { title:'Робітник(-ця) на пакуванні овочів і фруктів', city:'Ополе', salary:'4600–5100 zł netto', polish:'не потрібна', experience:'без досвіду' },
+  { title:'Водій навантажувача', city:'Вроцлав', salary:'6800–7900 zł netto', polish:'базова', experience:'потрібен досвід' },
+  { title:'Оператор виробничої лінії', city:'Лодзь', salary:'5300–6400 zł netto', polish:'базова', experience:'бажаний досвід' },
+  { title:'Складальник(-ця) на виробництві', city:'Катовіце', salary:'5000–5700 zł netto', polish:'не потрібна', experience:'без досвіду' },
+  { title:'Бригадир(-ка) складської зміни', city:'Познань', salary:'7500–9000 zł netto', polish:'вільно', experience:'потрібен досвід, 2+ роки' }
+];
+
+function addBotMessage(text){
+  const row = document.createElement('div');
+  row.className = 'bot-row';
+  row.innerHTML = `<div class="bot-mark">FP</div><div class="bot-bubble">${text}</div>`;
+  chat.appendChild(row);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function addUserAnswer(text){
+  const div = document.createElement('div');
+  div.className = 'user-answer';
+  div.textContent = text;
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function showOptions(opts, key){
+  const wrap = document.createElement('div');
+  wrap.className = 'options';
+  opts.forEach(label => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn';
+    btn.type = 'button';
+    btn.textContent = label;
+    btn.addEventListener('click', () => handleAnswer(key, label, wrap));
+    wrap.appendChild(btn);
+  });
+  chat.appendChild(wrap);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function handleAnswer(key, label, optionsEl){
+  optionsEl.remove();
+  addUserAnswer(label);
+  answers[key] = label;
+
+  const nextIndex = questions.findIndex(q => q.key === key) + 1;
+  if (nextIndex < questions.length){
+    setTimeout(() => askQuestion(nextIndex), 350);
+  } else {
+    setTimeout(() => runMatching(), 350);
+  }
+}
+
+function askQuestion(index){
+  const q = questions[index];
+  addBotMessage(q.text);
+  showOptions(q.options, q.key);
+}
+
+function showTyping(){
+  const t = document.createElement('div');
+  t.className = 'typing';
+  t.id = 'typingIndicator';
+  t.innerHTML = '<span></span><span></span><span></span>';
+  chat.appendChild(t);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function removeTyping(){
+  const t = document.getElementById('typingIndicator');
+  if (t) t.remove();
+}
+
+async function runMatching(){
+  showTyping();
+
+  let matchResult;
+  try {
+    matchResult = await matchJobsWithAI(answers);
+  } catch (err){
+    console.error('AI matching failed, using fallback:', err);
+    matchResult = fallbackMatch(answers);
+  }
+
+  removeTyping();
+  renderResults(matchResult);
+}
+
+async function matchJobsWithAI(answers){
+  const systemPrompt = `Ти — стриманий, доброзичливий консультант кадрового агентства Fair Play в Польщі. Тобі надають анкету кандидата та список вакансій. Обери 2–3 вакансії зі списку, що підходять найкраще, та напиши коротке персональне повідомлення українською (2–3 речення, спокійний, поважний тон, без перебільшень і без емодзі).
+
+Список вакансій (JSON): ${JSON.stringify(jobsData)}
+
+Відповідай ЛИШЕ у форматі JSON, без жодного тексту навколо, за схемою:
+{"message": "коротке персональне повідомлення", "matches": [{"title": "...", "city": "...", "salary": "...", "why": "одне речення, чому підходить саме цій людині"}]}`;
+
+  const userMsg = `Досвід роботи: ${answers.experience}\nРівень польської: ${answers.polish}\nЗараз перебуває: ${answers.location}`;
+
+  const response = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: "claude-sonnet-4-6",
+      max_tokens: 1000,
+      system: systemPrompt,
+      messages: [{ role: "user", content: userMsg }]
+    })
+  });
+
+  if (!response.ok) throw new Error('API request failed: ' + response.status);
+
+  const data = await response.json();
+  const text = data.content.map(block => block.text || "").join("\n");
+  const clean = text.replace(/```json|```/g, "").trim();
+  const parsed = JSON.parse(clean);
+
+  if (!parsed.matches || !parsed.matches.length) throw new Error('Empty matches from AI');
+  return parsed;
+}
+
+function fallbackMatch(answers){
+  let pool = jobsData.filter(j => {
+    if (answers.experience === 'Ні, без досвіду' && j.experience.includes('потрібен досвід')) return false;
+    if (answers.polish === 'Не знаю польську' && j.polish !== 'не потрібна') return false;
+    return true;
+  });
+  if (pool.length < 2) pool = jobsData;
+  const chosen = pool.slice(0, 3);
+  return {
+    message: 'Ось кілька вакансій, які можуть підійти саме вам. Наш рекрутер зв\\'яжеться з вами, щоб уточнити деталі.',
+    matches: chosen.map(j => ({ title:j.title, city:j.city, salary:j.salary, why:'Відповідає вашому досвіду та рівню мови.' }))
+  };
+}
+
+function renderResults(result){
+  resultsEl.style.display = 'flex';
+  resultsEl.innerHTML = '';
+
+  const note = document.createElement('div');
+  note.className = 'results-note';
+  note.textContent = result.message;
+  resultsEl.appendChild(note);
+
+  result.matches.forEach((job, i) => {
+    const card = document.createElement('div');
+    card.className = 'job-card';
+    card.style.animationDelay = (i * 0.08) + 's';
+    card.innerHTML = `
+      <div class="job-title">${job.title}</div>
+      <div class="job-meta">${job.city} · ${job.salary}</div>
+      <div class="job-why">${job.why}</div>
+    `;
+    resultsEl.appendChild(card);
+  });
+
+  const ctaRow = document.createElement('div');
+  ctaRow.className = 'cta-row';
+  ctaRow.innerHTML = `
+    <a class="cta primary" href="tel:+48604943236">Зателефонувати</a>
+    <a class="cta" href="sms:+48604943236">Написати</a>
+  `;
+  resultsEl.appendChild(ctaRow);
+
+  const restartBtn = document.createElement('button');
+  restartBtn.className = 'restart';
+  restartBtn.type = 'button';
+  restartBtn.textContent = 'Почати заново';
+  restartBtn.addEventListener('click', restart);
+  resultsEl.appendChild(restartBtn);
+
+  resultsEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function restart(){
+  Object.keys(answers).forEach(k => delete answers[k]);
+  chat.innerHTML = '';
+  resultsEl.style.display = 'none';
+  resultsEl.innerHTML = '';
+  askQuestion(0);
+}
+
+askQuestion(0);
+</script>
+
+</body>
+</html>
